@@ -1,0 +1,16 @@
+{
+  "name": "local_sis_accessibility",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "test": "node tools/test.mjs"
+  },
+  "devDependencies": {
+    "@babel/core": "7.28.0",
+    "@babel/plugin-transform-modules-amd": "7.27.1",
+    "esbuild": "0.25.1",
+    "jsdom": "26.1.0"
+  }
+}

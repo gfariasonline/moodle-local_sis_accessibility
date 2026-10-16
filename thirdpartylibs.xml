@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<libraries>
+  <library>
+    <location>thirdparty/sienna</location>
+    <name>Sienna Accessibility Widget (adapted tool definitions)</name>
+    <version>2.0.1-e574c32</version>
+    <license>MIT</license>
+    <licenseversion></licenseversion>
+  </library>
+  <library>
+    <location>fonts</location>
+    <name>OpenDyslexic Regular</name>
+    <version>1824da5c0e41dc3e13ffc7f3a636dcaf695d61b7</version>
+    <license>SIL Open Font License</license>
+    <licenseversion>1.1</licenseversion>
+  </library>
+  <library>
+    <location>thirdparty/icons/material</location>
+    <name>Google Material accessibility_new icon</name>
+    <version>49d4db35df873165d6bd6ba09b063c7dafbac2f4</version>
+    <license>Apache</license>
+    <licenseversion>2.0</licenseversion>
+  </library>
+  <library>
+    <location>thirdparty/icons/lucide</location>
+    <name>Lucide icons</name>
+    <version>7b0196e249ca09ca27c584c497aca9a8cab8a7f5</version>
+    <license>ISC and MIT</license>
+    <licenseversion></licenseversion>
+  </library>
+</libraries>

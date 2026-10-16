@@ -1,0 +1,12 @@
+node_modules/
+.phpunit.result.cache
+*.zip
+
+# Local development and consultation files.
+.DS_Store
+VALIDACAO.md
+AGENTS.md
+CLAUDE.md
+.claude/
+.codex/
+thirdparty/sienna/upstream-src/
