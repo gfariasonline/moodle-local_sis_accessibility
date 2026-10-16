@@ -64,5 +64,4 @@ final class page_policy {
     private static function matches_page(string $layout, string $path, string $expectedlayout, string $directory): bool {
         return $layout === $expectedlayout || strpos($path, '/' . $directory . '/') === 0;
     }
-
 }

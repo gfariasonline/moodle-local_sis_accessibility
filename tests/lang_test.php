@@ -66,5 +66,4 @@ final class lang_test extends \advanced_testcase {
             $this->assertNotSame('', trim($en[$key]), $key);
         }
     }
-
 }

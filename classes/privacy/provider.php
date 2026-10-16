@@ -25,6 +25,9 @@
 namespace local_sis_accessibility\privacy;
 
 use core_privacy\local\metadata\collection;
+use core_privacy\local\metadata\provider as metadata_provider;
+use core_privacy\local\request\core_userlist_provider;
+use core_privacy\local\request\plugin\provider as request_provider;
 
 /**
  * Browser settings cannot be read or erased remotely by the server.
@@ -32,11 +35,7 @@ use core_privacy\local\metadata\collection;
  * lifecycle and privacy deletion are owned by core_user. There are no plugin
  * user tables, user_preferences or account-linked accessibility profiles.
  */
-final class provider implements
-    \core_privacy\local\metadata\provider,
-    \core_privacy\local\request\plugin\provider,
-    \core_privacy\local\request\core_userlist_provider {
-
+final class provider implements core_userlist_provider, metadata_provider, request_provider {
     /**
      * Declare both storage locations rather than claiming the plugin stores no data.
      * @param collection $collection Metadata collection

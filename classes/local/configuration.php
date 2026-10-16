@@ -89,8 +89,10 @@ final class configuration {
      */
     private static function dimensions(\stdClass $raw): array {
         $result = [];
-        foreach (['size' => 56, 'mobilesize' => 56, 'offsetx' => 20, 'offsety' => 20,
-                'mobileoffsetx' => 12, 'mobileoffsety' => 12] as $name => $default) {
+        foreach (
+            ['size' => 56, 'mobilesize' => 56, 'offsetx' => 20, 'offsety' => 20,
+                'mobileoffsetx' => 12, 'mobileoffsety' => 12] as $name => $default
+        ) {
             $min = strpos($name, 'size') !== false ? 48 : 0;
             $max = $min === 48 ? 96 : 200;
             $value = filter_var($raw->$name ?? $default, FILTER_VALIDATE_INT);
@@ -144,8 +146,10 @@ final class configuration {
             return null;
         }
         $selected = array_map('trim', explode(',', $stored));
-        if (count($selected) !== count(self::ORIGINAL_TOOLS) ||
-                array_diff(self::ORIGINAL_TOOLS, $selected) || array_diff($selected, self::ORIGINAL_TOOLS)) {
+        if (
+            count($selected) !== count(self::ORIGINAL_TOOLS) ||
+                array_diff(self::ORIGINAL_TOOLS, $selected) || array_diff($selected, self::ORIGINAL_TOOLS)
+        ) {
             return null;
         }
         return implode(',', self::TOOLS);
@@ -159,8 +163,10 @@ final class configuration {
         global $CFG, $SESSION, $USER;
         $owner = empty($USER->id) ? 'visitor' : (isguestuser() ? 'guest' : 'user:' . (int) $USER->id);
         $scope = $SESSION->local_sis_accessibility ?? null;
-        if (!is_array($scope) || ($scope['owner'] ?? '') !== $owner ||
-                !preg_match('/^[a-f0-9]{32}$/D', $scope['nonce'] ?? '')) {
+        if (
+            !is_array($scope) || ($scope['owner'] ?? '') !== $owner ||
+                !preg_match('/^[a-f0-9]{32}$/D', $scope['nonce'] ?? '')
+        ) {
             $scope = ['owner' => $owner, 'nonce' => bin2hex(random_bytes(16))];
             $SESSION->local_sis_accessibility = $scope;
         }
@@ -214,8 +220,10 @@ final class configuration {
      * @return array Mustache context, escaped by the template's double braces
      */
     public static function template_context(array $config): array {
-        return ['config' => json_encode(self::for_client($config),
-            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR)];
+        return ['config' => json_encode(
+            self::for_client($config),
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR
+        )];
     }
 
     /**

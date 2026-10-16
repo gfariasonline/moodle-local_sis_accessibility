@@ -39,8 +39,10 @@ final class hook_callbacks {
      */
     public static function before_footer_html_generation(before_footer_html_generation $hook): void {
         global $CFG;
-        if ((defined('CLI_SCRIPT') && CLI_SCRIPT) || (defined('AJAX_SCRIPT') && AJAX_SCRIPT) ||
-                (defined('WS_SERVER') && WS_SERVER) || !empty($CFG->maintenance_enabled)) {
+        if (
+            (defined('CLI_SCRIPT') && CLI_SCRIPT) || (defined('AJAX_SCRIPT') && AJAX_SCRIPT) ||
+                (defined('WS_SERVER') && WS_SERVER) || !empty($CFG->maintenance_enabled)
+        ) {
             return;
         }
         $hook->add_html(self::get_footer_html($hook->renderer));
@@ -60,16 +62,25 @@ final class hook_callbacks {
             // Accessibility enhancement must not interrupt an unusual nonlocal page.
             return '';
         }
-        if (!page_policy::allows($config, $PAGE->pagelayout, $path,
-                (int) ($PAGE->course->id ?? 0), $CFG->admin)) {
+        if (
+            !page_policy::allows(
+                $config,
+                $PAGE->pagelayout,
+                $path,
+                (int) ($PAGE->course->id ?? 0),
+                $CFG->admin
+            )
+        ) {
             return '';
         }
         self::$rendered = self::$rendered ?? new \WeakMap();
         if (isset(self::$rendered[$PAGE])) {
             return '';
         }
-        $html = $renderer->render_from_template('local_sis_accessibility/widget',
-            configuration::template_context($config));
+        $html = $renderer->render_from_template(
+            'local_sis_accessibility/widget',
+            configuration::template_context($config)
+        );
         $PAGE->requires->js_call_amd('local_sis_accessibility/init', 'init');
         self::$rendered[$PAGE] = true;
         return $html;

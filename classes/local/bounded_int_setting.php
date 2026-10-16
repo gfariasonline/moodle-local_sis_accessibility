@@ -56,8 +56,11 @@ final class bounded_int_setting extends \admin_setting_configtext {
     public function validate($data) {
         $value = filter_var($data, FILTER_VALIDATE_INT);
         if ($value === false || $value < $this->minimum || $value > $this->maximum) {
-            return get_string('invalidnumber', 'local_sis_accessibility',
-                (object) ['min' => $this->minimum, 'max' => $this->maximum]);
+            return get_string(
+                'invalidnumber',
+                'local_sis_accessibility',
+                (object) ['min' => $this->minimum, 'max' => $this->maximum]
+            );
         }
         return true;
     }

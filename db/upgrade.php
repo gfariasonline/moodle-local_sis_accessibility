@@ -32,7 +32,8 @@ function xmldb_local_sis_accessibility_upgrade(int $oldversion): bool {
     if ($oldversion < 2026101601) {
         // Enable the tools added after the first release only where the administrator never customised the list.
         $migrated = \local_sis_accessibility\local\configuration::migrate_tools(
-            get_config('local_sis_accessibility', 'tools'));
+            get_config('local_sis_accessibility', 'tools')
+        );
         if ($migrated !== null) {
             set_config('tools', $migrated, 'local_sis_accessibility');
         }
