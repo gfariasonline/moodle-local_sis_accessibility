@@ -89,10 +89,15 @@ final class configuration {
      */
     private static function dimensions(\stdClass $raw): array {
         $result = [];
-        foreach (
-            ['size' => 56, 'mobilesize' => 56, 'offsetx' => 20, 'offsety' => 20,
-                'mobileoffsetx' => 12, 'mobileoffsety' => 12] as $name => $default
-        ) {
+        $defaults = [
+            'size' => 56,
+            'mobilesize' => 56,
+            'offsetx' => 20,
+            'offsety' => 20,
+            'mobileoffsetx' => 12,
+            'mobileoffsety' => 12,
+        ];
+        foreach ($defaults as $name => $default) {
             $min = strpos($name, 'size') !== false ? 48 : 0;
             $max = $min === 48 ? 96 : 200;
             $value = filter_var($raw->$name ?? $default, FILTER_VALIDATE_INT);

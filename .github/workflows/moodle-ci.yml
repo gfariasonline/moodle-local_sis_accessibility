@@ -151,4 +151,10 @@ jobs:
           npx grunt eslint:amd stylelint:css gherkinlint --root="$plugin_path" --max-lint-warnings=0
       - name: Mustache templates
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: moodle-plugin-ci mustache ./plugin
+        # The mustache linter rejects the symlinked plugin; lint a real copy inside the Moodle tree.
+        run: |
+          link=$(find moodle -maxdepth 3 -type l -name sis_accessibility | head -n 1)
+          test -n "$link"
+          rm "$link"
+          cp -R plugin "$link"
+          moodle-plugin-ci mustache "$link"

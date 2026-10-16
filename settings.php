@@ -67,10 +67,15 @@ if ($hassiteconfig) {
                 $positions
             ));
         }
-        foreach (
-            ['size' => 56, 'mobilesize' => 56, 'offsetx' => 20, 'offsety' => 20,
-                'mobileoffsetx' => 12, 'mobileoffsety' => 12] as $name => $default
-        ) {
+        $defaults = [
+            'size' => 56,
+            'mobilesize' => 56,
+            'offsetx' => 20,
+            'offsety' => 20,
+            'mobileoffsetx' => 12,
+            'mobileoffsety' => 12,
+        ];
+        foreach ($defaults as $name => $default) {
             $size = strpos($name, 'size') !== false;
             $settings->add(new \local_sis_accessibility\local\bounded_int_setting(
                 'local_sis_accessibility/' . $name,

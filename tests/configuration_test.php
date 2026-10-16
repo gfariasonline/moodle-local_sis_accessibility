@@ -98,10 +98,12 @@ final class configuration_test extends \advanced_testcase {
     }
 
     public function test_button_foreground_is_adjusted_to_wcag_contrast(): void {
-        foreach (
-            [['#FF7A00', '#FFFFFF', '#000000'], ['#111111', '#000000', '#FFFFFF'],
-                ['#FFFFFF', '#191919', '#191919']] as [$background, $foreground, $expected]
-        ) {
+        $cases = [
+            ['#FF7A00', '#FFFFFF', '#000000'],
+            ['#111111', '#000000', '#FFFFFF'],
+            ['#FFFFFF', '#191919', '#191919'],
+        ];
+        foreach ($cases as [$background, $foreground, $expected]) {
             $config = configuration::normalise((object) ['colour' => $background, 'textcolour' => $foreground]);
             $this->assertSame($background, $config['colour']);
             $this->assertSame($expected, $config['textcolour']);
