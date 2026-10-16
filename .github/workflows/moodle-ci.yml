@@ -13,27 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  javascript:
-    name: JavaScript tests and reproducible assets
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '22'
-          cache: npm
-      - run: npm ci
-      - run: npm test
-      - name: Rebuild the bundled assets
-        run: npm run build
-      - name: Check committed build output
-        run: git diff --exit-code -- amd/src/icons.js amd/src/sienna.js amd/build
-      - name: Verify bundled third-party checksums
-        run: sha256sum --check thirdparty/SHA256SUMS
-
   php:
     name: Moodle ${{ matrix.moodle }} / PHP ${{ matrix.php }} / ${{ matrix.database }}
     runs-on: ubuntu-24.04

@@ -16,7 +16,4 @@ CLAUDE.md export-ignore
 VALIDACAO.md export-ignore
 node_modules export-ignore
 tests export-ignore
-tools export-ignore
-package.json export-ignore
-package-lock.json export-ignore
 thirdparty/sienna/upstream-src export-ignore
