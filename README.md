@@ -110,40 +110,6 @@ purge caches. Retain a backup and validate custom settings and representative co
 To uninstall, use Moodle's plugin management interface, then remove the plugin directory.
 Browser preference cleanup remains a local browser operation as described above.
 
-## Development
-
-Node.js/npm and Python 3 are build tools only; the production Moodle server does not need
-them. From the plugin directory:
-
-```sh
-npm ci
-npm run build
-npm test
-python3 tools/package.py /tmp/sis_accessibility-0.2.0-dev.zip
-```
-
-The build generates named Moodle AMD modules and adjacent source maps in `amd/build/`.
-PHPUnit tests in `tests/` require an isolated Moodle PHPUnit environment with the component
-installed. JavaScript DOM tests do not replace browser, keyboard, assistive technology or
-Moodle integration checks. See [CHANGES.md](CHANGES.md) for release changes.
-
-## Continuous integration
-
-GitHub Actions runs Moodle Plugin CI against Moodle 4.5, 5.0, 5.1, 5.2 and 5.3
-using PostgreSQL 17 and MariaDB 11.4, with PHP versions selected for each branch.
-Checks cover PHP syntax, coding style, PHPDoc, PHP Mess Detector, plugin structure,
-upgrade savepoints, isolated Moodle PHPUnit, JavaScript/CSS lint, Behat syntax and
-Mustache templates. A separate job runs the JavaScript tests, rebuilds the bundled
-AMD assets and checks that the committed output and third-party checksums match.
-The maintained local build pipeline is checked separately from Moodle's lint tasks.
-A passing workflow does not replace browser or assistive-technology testing.
-
-CAMP checks validate `.camp/listing.yml`, disclosure labels and source audit results.
-The tag-triggered CAMP release workflow uses OIDC without a stored publishing token.
-Publishing requires a public source repository, a claimed CAMP listing and an
-explicit release tag; adding these workflows does not publish the development build.
-See the [CAMP author guide](https://github.com/camp-registry/camp-docs/blob/main/AUTHORS.md).
-
 ## Support and licence
 
 Report reproducible problems through the [GitHub issue tracker](https://github.com/gfariasonline/moodle-local_sis_accessibility/issues),
