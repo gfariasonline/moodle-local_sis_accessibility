@@ -7,7 +7,11 @@ const TOOLS = ['fontsize', 'bold', 'lineheight', 'letterspacing', 'dyslexia', 'l
 const PREFIX = 'local_sis_accessibility:v1:';
 const RETENTION = 90 * 24 * 60 * 60 * 1000;
 
-/** Validate only known, enabled tools and make colour modes mutually exclusive. */
+/**
+ * Validate only known, enabled tools and make colour modes mutually exclusive.
+ * @param {Object} input
+ * @param {string[]} enabled
+ */
 export const normalise = (input, enabled) => {
     const state = {};
     if (!input || typeof input !== 'object' || Array.isArray(input)) {
@@ -28,11 +32,19 @@ export const normalise = (input, enabled) => {
 };
 export const colourTools = COLOURS;
 
-/** Storage failures never prevent using the panel. No cookies or server writes. */
+/**
+ * Storage failures never prevent using the panel. No cookies or server writes.
+ * @param {string} key
+ * @param {string[]} tools
+ * @param {boolean} persist
+ * @param {Storage} storage
+ */
 export const createPreferences = (key, tools, persist, storage) => {
     let memory = {};
     const remove = name => {
-        try { storage?.removeItem(name); } catch (error) { /* Storage may be denied. */ }
+        try {
+            storage?.removeItem(name);
+        } catch (error) { /* Storage may be denied. */ }
     };
     const load = () => {
         if (!persist) {
@@ -66,23 +78,29 @@ export const createPreferences = (key, tools, persist, storage) => {
         }
         return memory;
     };
+    const expired = name => {
+        try {
+            const raw = storage.getItem(name);
+            return raw.length > 4096 || !(JSON.parse(raw).expires > Date.now());
+        } catch (error) {
+            return true;
+        }
+    };
     // Remove only expired plugin-owned keys; bounded to avoid an unbounded origin-wide scan.
     if (persist) {
         try {
             const stale = [];
             for (let i = 0; i < Math.min(storage?.length || 0, 200); i++) {
                 const name = storage.key(i);
-                if (name?.startsWith(PREFIX)) {
-                    try {
-                        const raw = storage.getItem(name);
-                        if (raw.length > 4096 || !(JSON.parse(raw).expires > Date.now())) {
-                            stale.push(name);
-                        }
-                    } catch (error) { stale.push(name); }
+                if (name?.startsWith(PREFIX) && expired(name)) {
+                    stale.push(name);
                 }
             }
             stale.forEach(remove);
         } catch (error) { /* Storage enumeration is optional. */ }
     }
-    return {load, save, reset: () => { memory = {}; remove(key); }};
+    return {load, save, reset: () => {
+        memory = {};
+        remove(key);
+    }};
 };

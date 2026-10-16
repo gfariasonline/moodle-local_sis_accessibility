@@ -71,6 +71,24 @@ final class configuration {
         foreach (['position', 'mobileposition'] as $name) {
             $result[$name] = in_array($raw->$name ?? '', self::POSITIONS, true) ? $raw->$name : 'center-left';
         }
+        $result += self::dimensions($raw);
+        $result += self::colours($raw);
+        try {
+            $result['excludedcourses'] = self::course_ids((string) ($raw->excludedcourses ?? ''));
+        } catch (\invalid_parameter_exception $exception) {
+            // Reject the entire malformed exclusion list; never coerce "123invalid" to course 123.
+            $result['excludedcourses'] = [];
+        }
+        return $result;
+    }
+
+    /**
+     * Validate launcher dimensions and offsets independently of the other settings.
+     * @param \stdClass $raw Stored values
+     * @return array Bounded sizes and offsets
+     */
+    private static function dimensions(\stdClass $raw): array {
+        $result = [];
         foreach (['size' => 56, 'mobilesize' => 56, 'offsetx' => 20, 'offsety' => 20,
                 'mobileoffsetx' => 12, 'mobileoffsety' => 12] as $name => $default) {
             $min = strpos($name, 'size') !== false ? 48 : 0;
@@ -78,15 +96,19 @@ final class configuration {
             $value = filter_var($raw->$name ?? $default, FILTER_VALIDATE_INT);
             $result[$name] = $value === false ? $default : max($min, min($max, $value));
         }
+        return $result;
+    }
+
+    /**
+     * Validate the two launcher colours and preserve readable foreground contrast.
+     * @param \stdClass $raw Stored values
+     * @return array Validated colours
+     */
+    private static function colours(\stdClass $raw): array {
+        $result = [];
         foreach (['colour' => '#0848CA', 'textcolour' => '#FFFFFF'] as $name => $default) {
             $value = $raw->$name ?? '';
             $result[$name] = is_string($value) && preg_match('/^#[a-f0-9]{6}$/iD', $value) ? $value : $default;
-        }
-        try {
-            $result['excludedcourses'] = self::course_ids((string) ($raw->excludedcourses ?? ''));
-        } catch (\invalid_parameter_exception $exception) {
-            // Reject the entire malformed exclusion list; never coerce "123invalid" to course 123.
-            $result['excludedcourses'] = [];
         }
         if (self::contrast_ratio($result['colour'], $result['textcolour']) < 4.5) {
             $result['textcolour'] = self::contrast_ratio($result['colour'], '#000000') >=

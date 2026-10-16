@@ -1,0 +1,22 @@
+# CAMP builds its distribution from git archive. Keep the tagged tree
+# installable while excluding development tooling and local guidance.
+.github export-ignore
+.camp export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+.editorconfig export-ignore
+.eslintrc* export-ignore
+.stylelintrc* export-ignore
+.phpcs.xml* export-ignore
+phpcs.xml* export-ignore
+phpmd.xml* export-ignore
+phpunit.xml* export-ignore
+AGENTS.md export-ignore
+CLAUDE.md export-ignore
+VALIDACAO.md export-ignore
+node_modules export-ignore
+tests export-ignore
+tools export-ignore
+package.json export-ignore
+package-lock.json export-ignore
+thirdparty/sienna/upstream-src export-ignore

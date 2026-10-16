@@ -1,0 +1,154 @@
+name: Moodle Plugin CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: moodle-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  javascript:
+    name: JavaScript tests and reproducible assets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Rebuild the bundled assets
+        run: npm run build
+      - name: Check committed build output
+        run: git diff --exit-code -- amd/src/icons.js amd/src/sienna.js amd/build
+      - name: Verify bundled third-party checksums
+        run: sha256sum --check thirdparty/SHA256SUMS
+
+  php:
+    name: Moodle ${{ matrix.moodle }} / PHP ${{ matrix.php }} / ${{ matrix.database }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - moodle: '4.5'
+            branch: MOODLE_405_STABLE
+            php: '8.1'
+            database: mariadb
+          - moodle: '4.5'
+            branch: MOODLE_405_STABLE
+            php: '8.3'
+            database: pgsql
+          - moodle: '5.0'
+            branch: MOODLE_500_STABLE
+            php: '8.2'
+            database: mariadb
+          - moodle: '5.1'
+            branch: MOODLE_501_STABLE
+            php: '8.3'
+            database: pgsql
+          - moodle: '5.2'
+            branch: MOODLE_502_STABLE
+            php: '8.3'
+            database: mariadb
+          - moodle: '5.3'
+            branch: MOODLE_503_STABLE
+            php: '8.4'
+            database: pgsql
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U root"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mariadb-admin ping -h 127.0.0.1 -uroot -proot --silent"
+          --health-interval 10s --health-timeout 5s --health-retries 10
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          path: plugin
+          persist-credentials: false
+      - name: Set up PHP
+        uses: shivammathur/setup-php@d52fc211a0436f8839a587b3b5b8efddab4744ea # v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: zip, gd, mbstring, mysqli, pgsql, intl, soap, exif
+          ini-values: max_input_vars=5000
+          coverage: none
+          tools: composer:v2
+      - name: Install Moodle Plugin CI
+        run: |
+          composer create-project --no-interaction --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci 4.5.11
+          echo "$GITHUB_WORKSPACE/ci/bin" >> "$GITHUB_PATH"
+          echo "$GITHUB_WORKSPACE/ci/vendor/bin" >> "$GITHUB_PATH"
+          sudo locale-gen en_AU.UTF-8
+          echo "NVM_DIR=$HOME/.nvm" >> "$GITHUB_ENV"
+      - name: Install isolated Moodle test site
+        id: install
+        run: >-
+          moodle-plugin-ci install --plugin ./plugin --no-plugin-node
+          --db-host=127.0.0.1 --db-user=root --db-pass=root --db-name=moodle
+        env:
+          DB: ${{ matrix.database }}
+          MOODLE_BRANCH: ${{ matrix.branch }}
+      - name: PHP syntax
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: moodle-plugin-ci phplint ./plugin
+      - name: PHP Mess Detector
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: moodle-plugin-ci phpmd ./plugin
+      - name: Moodle coding style
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: moodle-plugin-ci phpcs --max-warnings 0 ./plugin
+      - name: PHP documentation
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: moodle-plugin-ci phpdoc --max-warnings 0 ./plugin
+      - name: Plugin structure
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: moodle-plugin-ci validate ./plugin
+      - name: Upgrade savepoints
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: moodle-plugin-ci savepoints ./plugin
+      - name: Moodle PHPUnit integration
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: moodle-plugin-ci phpunit --fail-on-warning ./plugin
+      - name: Moodle JavaScript, CSS and Behat syntax checks
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          cd moodle
+          # shellcheck source=/dev/null
+          . "$NVM_DIR/nvm.sh"
+          nvm use
+          plugin_path=local/sis_accessibility
+          if [ -d public/local/sis_accessibility ]; then
+            plugin_path=public/local/sis_accessibility
+          fi
+          npx grunt eslint:amd stylelint:css gherkinlint --root="$plugin_path" --max-lint-warnings=0
+      - name: Mustache templates
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: moodle-plugin-ci mustache ./plugin

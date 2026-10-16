@@ -38,15 +38,31 @@ final class page_policy {
      * @return bool Whether the widget is eligible
      */
     public static function allows(array $config, string $layout, string $path, int $courseid, string $admindir = 'admin'): bool {
-        if (!$config['enabled'] || !$config['tools'] || in_array($layout, ['embedded', 'print', 'popup', 'maintenance'], true)) {
+        if (!$config['enabled'] || !$config['tools']) {
             return false;
         }
-        if (!$config['showlogin'] && ($layout === 'login' || strpos($path, '/login/') === 0)) {
+        if (in_array($layout, ['embedded', 'print', 'popup', 'maintenance'], true)) {
             return false;
         }
-        if (!$config['showadmin'] && ($layout === 'admin' || strpos($path, '/' . $admindir . '/') === 0)) {
+        if (!$config['showlogin'] && self::matches_page($layout, $path, 'login', 'login')) {
+            return false;
+        }
+        if (!$config['showadmin'] && self::matches_page($layout, $path, 'admin', $admindir)) {
             return false;
         }
         return !in_array($courseid, $config['excludedcourses'], true);
     }
+
+    /**
+     * Match either Moodle's page layout or its corresponding local directory.
+     * @param string $layout Current page layout
+     * @param string $path Local URL path
+     * @param string $expectedlayout Layout to match
+     * @param string $directory Directory to match
+     * @return bool Whether this is the requested page category
+     */
+    private static function matches_page(string $layout, string $path, string $expectedlayout, string $directory): bool {
+        return $layout === $expectedlayout || strpos($path, '/' . $directory . '/') === 0;
+    }
+
 }

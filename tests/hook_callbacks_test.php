@@ -56,10 +56,9 @@ final class hook_callbacks_test extends \advanced_testcase {
             'url' => new class {
                 /**
                  * Return a local eligible path.
-                 * @param bool $escaped Whether escaping was requested
                  * @return string Local path
                  */
-                public function out_as_local_url($escaped) {
+                public function out_as_local_url() {
                     return '/';
                 }
             },
@@ -98,10 +97,9 @@ final class hook_callbacks_test extends \advanced_testcase {
             'url' => new class {
                 /**
                  * Simulate Moodle rejecting an external page URL.
-                 * @param bool $escaped Whether escaping was requested
                  * @return string Never returns
                  */
-                public function out_as_local_url($escaped) {
+                public function out_as_local_url() {
                     throw new \coding_exception('URL is not local');
                 }
             },

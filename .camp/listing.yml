@@ -1,0 +1,25 @@
+# Schema: https://camp-registry.org/schema/listing.schema.json
+name: SIS Accessibility
+summary: Local accessibility tools for Moodle, including reading adjustments, colour controls, focus guidance and image descriptions.
+description: |
+  SIS Accessibility adds a configurable accessibility panel to Moodle.
+  Its scripts, icons and fonts are included in the plugin; no CDN,
+  external account or remote widget service is required.
+
+  - Text size, spacing, readable font and content highlighting
+  - Contrast, monochrome and saturation adjustments
+  - Reading guide, reduced animations and larger cursor
+  - Image visibility and image descriptions
+  - Four profiles combining the available adjustments
+  - Configurable button position for desktop and mobile
+  - English and Brazilian Portuguese interface
+
+  The plugin is developed by Thiago Serrão for GFARIAS. This is a development
+  release. The tools complement accessible course design and do not certify
+  WCAG compliance or repair inaccessible learning content.
+labels:
+  - fully-free
+links:
+  docs: https://github.com/gfariasonline/moodle-local_sis_accessibility#readme
+  issues: https://github.com/gfariasonline/moodle-local_sis_accessibility/issues
+  changelog: https://github.com/gfariasonline/moodle-local_sis_accessibility/blob/main/CHANGES.md

@@ -55,6 +55,8 @@ final class provider implements
 
     /**
      * There are no plugin-owned account records; core_user owns Moodle sessions.
+     * phpcs:ignore moodle.Commenting.ValidTags.Invalid -- Required privacy API parameter has no plugin-owned records.
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @param int $userid Requested account
      * @return \core_privacy\local\request\contextlist Empty plugin-owned context list
      */
@@ -65,6 +67,8 @@ final class provider implements
     /**
      * No account-linked data is available for server-side export.
      * Browser localStorage must be inspected locally; core_user exports session metadata.
+     * phpcs:ignore moodle.Commenting.ValidTags.Invalid -- Required privacy API parameter has no plugin-owned records.
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @param \core_privacy\local\request\approved_contextlist $contextlist Approved request
      */
     public static function export_user_data(\core_privacy\local\request\approved_contextlist $contextlist): void {
@@ -74,6 +78,8 @@ final class provider implements
     /**
      * Plugin-owned data does not exist in any context.
      * Core user erasure destroys Moodle sessions; browser data requires local reset.
+     * phpcs:ignore moodle.Commenting.ValidTags.Invalid -- Required privacy API parameter has no plugin-owned records.
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @param \context $context Requested context
      */
     public static function delete_data_for_all_users_in_context(\context $context): void {
@@ -82,6 +88,8 @@ final class provider implements
 
     /**
      * No plugin-owned account records require erasure.
+     * phpcs:ignore moodle.Commenting.ValidTags.Invalid -- Required privacy API parameter has no plugin-owned records.
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @param \core_privacy\local\request\approved_contextlist $contextlist Approved request
      */
     public static function delete_data_for_user(\core_privacy\local\request\approved_contextlist $contextlist): void {
@@ -90,6 +98,8 @@ final class provider implements
 
     /**
      * There are no users with plugin-owned records in the supplied context.
+     * phpcs:ignore moodle.Commenting.ValidTags.Invalid -- Required privacy API parameter has no plugin-owned records.
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @param \core_privacy\local\request\userlist $userlist User list to populate
      */
     public static function get_users_in_context(\core_privacy\local\request\userlist $userlist): void {
@@ -98,6 +108,8 @@ final class provider implements
 
     /**
      * No plugin-owned records require bulk erasure.
+     * phpcs:ignore moodle.Commenting.ValidTags.Invalid -- Required privacy API parameter has no plugin-owned records.
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      * @param \core_privacy\local\request\approved_userlist $userlist Approved users
      */
     public static function delete_data_for_users(\core_privacy\local\request\approved_userlist $userlist): void {

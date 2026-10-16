@@ -13,7 +13,14 @@ const EXCLUDE = WIDGET + ',svg,math,mjx-container,.MathJax,.MathJax_Display,text
 const ICON_FONT = /awesome|glyphicon|material|ionicons|iconfont|fontello|bootstrap-icons|symbols/i;
 const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE', 'LINK', 'META', 'HEAD', 'TITLE', 'BASE', 'BR', 'OPTION']);
 
-/** Page backgrounds cannot carry a filter (it would become the containing block of fixed UI), so they are re-tinted. */
+/**
+ * Page backgrounds cannot carry a filter (it would become the containing block of fixed UI), so they are re-tinted.
+ * @param {number[]} root0
+ * @param {number} root0."0"
+ * @param {number} root0."1"
+ * @param {number} root0."2"
+ * @param {number} s
+ */
 const saturate = ([r, g, b], s) => [
     (0.213 + 0.787 * s) * r + (0.715 - 0.715 * s) * g + (0.072 - 0.072 * s) * b,
     (0.213 - 0.213 * s) * r + (0.715 + 0.285 * s) * g + (0.072 - 0.072 * s) * b,
@@ -30,7 +37,13 @@ const parseColour = value => {
     if (!match) {
         return null;
     }
-    const alpha = match[4] === undefined ? 1 : (match[4].endsWith('%') ? parseFloat(match[4]) / 100 : parseFloat(match[4]));
+    let alpha = 1;
+    if (match[4] !== undefined) {
+        alpha = parseFloat(match[4]);
+        if (match[4].endsWith('%')) {
+            alpha /= 100;
+        }
+    }
     return {rgb: [match[1], match[2], match[3]].map(Number), alpha};
 };
 const isPainted = value => {
@@ -39,7 +52,10 @@ const isPainted = value => {
 };
 const hasText = el => [...el.childNodes].some(node => node.nodeType === 3 && /\S/.test(node.textContent));
 
-/** Reversible styles, measured before writing, with incremental AJAX processing. */
+/**
+ * Reversible styles, measured before writing, with incremental AJAX processing.
+ * @param {Document} doc
+ */
 export const createEffects = (doc = document) => {
     const win = doc.defaultView;
     const originals = new Map();
@@ -77,7 +93,8 @@ export const createEffects = (doc = document) => {
     };
     const write = (element, property, value) => {
         if (!originals.has(element)) {
-            originals.set(element, {hadStyle: element.hasAttribute('style'), originalStyle: element.getAttribute('style'), properties: new Map()});
+            originals.set(element, {hadStyle: element.hasAttribute('style'),
+                originalStyle: element.getAttribute('style'), properties: new Map()});
         }
         const record = originals.get(element);
         if (!record.properties.has(property)) {
@@ -87,7 +104,11 @@ export const createEffects = (doc = document) => {
         element.style.setProperty(property, value, 'important');
         record.lastStyle = element.getAttribute('style');
     };
-    /** Undo one written property, keeping every other effect, and drop the record once nothing is left. */
+    /**
+     * Undo one written property, keeping every other effect, and drop the record once nothing is left.
+     * @param {Element} element
+     * @param {string} property
+     */
     const unwrite = (element, property) => {
         const record = originals.get(element);
         const saved = record?.properties.get(property);
@@ -124,6 +145,9 @@ export const createEffects = (doc = document) => {
      * Pick the top-level visual blocks that can safely carry a filter. A filter makes its element the containing block of
      * fixed descendants, so any block holding fixed UI (navbar, drawers, the widget, modals) is descended instead; fixed
      * blocks without fixed descendants carry the filter themselves.
+     * @param {Document|Element} root
+     * @param {Element[]} scope
+     * @param {Map} info
      */
     const filterTargets = (root, scope, info) => {
         const containers = new Set();
@@ -227,7 +251,9 @@ export const createEffects = (doc = document) => {
         });
     };
     const placeGuide = centre => {
-        if (!guide) { return; }
+        if (!guide) {
+            return;
+        }
         guideCentre = centre;
         const height = Math.min(60, Math.max(0, win.innerHeight));
         const top = Math.max(0, Math.min(win.innerHeight - height, centre - height / 2));
@@ -239,7 +265,9 @@ export const createEffects = (doc = document) => {
     const resizeGuide = () => placeGuide(guideCentre);
     const focusGuide = event => {
         const rect = event.target.getBoundingClientRect?.();
-        if (rect) { placeGuide(rect.top + rect.height / 2); }
+        if (rect) {
+            placeGuide(rect.top + rect.height / 2);
+        }
     };
     const reset = () => {
         observer?.disconnect();

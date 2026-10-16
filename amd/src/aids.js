@@ -46,7 +46,8 @@ export const createAids = (doc = document, options = {}) => {
             }
             elements.filter(element => !own(element)).forEach(element => element.setAttribute(IMAGE_ATTR, 'img'));
             [scope, ...scope.querySelectorAll('*')].filter(element => !element.hasAttribute(IMAGE_ATTR) && !own(element) &&
-                /url\(/.test(win.getComputedStyle(element).backgroundImage)).forEach(element => element.setAttribute(IMAGE_ATTR, 'bg'));
+                /url\(/.test(win.getComputedStyle(element).backgroundImage))
+                .forEach(element => element.setAttribute(IMAGE_ATTR, 'bg'));
         };
         return {
             on: () => {
@@ -92,8 +93,15 @@ export const createAids = (doc = document, options = {}) => {
         const handlers = {
             pointerover: event => show(event.target.closest?.('img')),
             pointerout: hide,
-            focusin: event => show(event.target.matches?.('img') ? event.target : event.target.matches?.('a,button,[role="button"],[role="link"]') ?
-                event.target.querySelector('img[alt]:not([alt=""])') : null),
+            focusin: event => {
+                if (event.target.matches?.('img')) {
+                    show(event.target);
+                } else if (event.target.matches?.('a,button,[role="button"],[role="link"]')) {
+                    show(event.target.querySelector('img[alt]:not([alt=""])'));
+                } else {
+                    show(null);
+                }
+            },
             focusout: hide,
             keydown: event => event.key === 'Escape' && hide()
         };

@@ -1,11 +1,12 @@
-import {build, transform} from 'esbuild';
+import {transform} from 'esbuild';
 import {transformAsync} from '@babel/core';
 import amd from '@babel/plugin-transform-modules-amd';
 import {execFileSync} from 'node:child_process';
 import {readFile, writeFile, readdir} from 'node:fs/promises';
 execFileSync('python3', ['tools/build-icons.py']);
-await build({entryPoints: ['thirdparty/sienna/src/sienna.js'], outfile: 'amd/src/sienna.js',
-    bundle: true, format: 'esm', target: 'es2018', legalComments: 'inline'});
+// The vendored adapter is already an ES module; copying preserves readable source and provenance.
+const siennaSource = await readFile('thirdparty/sienna/src/sienna.js', 'utf8');
+await writeFile('amd/src/sienna.js', siennaSource.replace('/*!', '/* @preserve'));
 for (const filename of (await readdir('amd/src')).filter(name => name.endsWith('.js'))) {
     const source = await readFile(`amd/src/${filename}`, 'utf8');
     const moduleName = `local_sis_accessibility/${filename.slice(0, -3)}`;

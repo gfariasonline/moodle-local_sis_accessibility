@@ -1,0 +1,38 @@
+name: CAMP checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12'
+
+      - name: Install CAMP tools
+        # The official distribution is installed from GitHub, not PyPI.
+        run: python -m pip install "git+https://github.com/camp-registry/camp-tools@1fad8ad1cf4103abc2e5036588416798b5bd221a" # v0.2.88
+
+      - name: Validate listing manifest
+        run: camp validate-listing .camp/listing.yml
+
+      # These are informational heuristics, as in registry CI. Tool failures
+      # still fail this job; source findings are reported without --strict.
+      - name: Check disclosure labels
+        run: camp lint-labels . --declared fully-free
+
+      - name: Audit plugin source
+        run: camp audit .

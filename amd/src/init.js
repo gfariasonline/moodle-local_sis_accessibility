@@ -13,22 +13,40 @@ const ICONS = {fontsize: 'font-size', bold: 'font-weight', lineheight: 'line-hei
     lightcontrast: 'light-contrast', darkcontrast: 'dark-contrast', cursor: 'big-cursor', guide: 'readable-guide',
     animations: 'stop-animations', hideimages: 'hide-images', imagetooltips: 'image-tooltips'};
 const GROUPS = [
-    {id: 'content', label: 'contentgroup', tools: ['fontsize', 'bold', 'lineheight', 'letterspacing', 'dyslexia', 'links', 'headings']},
+    {id: 'content', label: 'contentgroup', tools: ['fontsize', 'bold', 'lineheight', 'letterspacing',
+        'dyslexia', 'links', 'headings']},
     {id: 'visual', label: 'visualgroup', tools: ['guide', 'cursor']},
     {id: 'colour', label: 'colourgroup', tools: colourTools},
     {id: 'tools', label: 'toolsgroup', tools: ['animations', 'hideimages', 'imagetooltips']},
 ];
 
-/** Explicit, idempotent entry point scheduled by Moodle's output hook. */
+const availableLanguages = config => config.languages || {
+    [config.language || 'en']: config.labels['language_' + (config.language || 'en')] || config.language || 'English'
+};
+
+/**
+ * Explicit, idempotent entry point scheduled by Moodle's output hook.
+ * @param {Object} config
+ */
 export const init = config => {
     const doc = document;
     const root = doc.getElementById('sis-a11y-root');
-    if (!root) { return null; }
-    if (root.sisAccessibility) { return root.sisAccessibility; }
-    if (!config) {
-        try { config = JSON.parse(root.dataset.config || '{}'); } catch (error) { return null; }
+    if (!root) {
+        return null;
     }
-    if (!Array.isArray(config?.tools) || !config.tools.length || !config.labels) { return null; }
+    if (root.sisAccessibility) {
+        return root.sisAccessibility;
+    }
+    if (!config) {
+        try {
+            config = JSON.parse(root.dataset.config || '{}');
+        } catch (error) {
+            return null;
+        }
+    }
+    if (!Array.isArray(config?.tools) || !config.tools.length || !config.labels) {
+        return null;
+    }
     // A footer hook may render inside a theme container; keep the widget outside page effects.
     doc.body.append(root);
     const labels = config.labels;
@@ -46,7 +64,8 @@ export const init = config => {
     };
     const icon = key => createIcon(doc, key);
     const integer = (value, fallback, low, high) => Math.max(low, Math.min(high, Number.isFinite(+value) ? +value : fallback));
-    const position = value => ['center-left', 'center-right', 'bottom-left', 'bottom-right', 'top-left', 'top-right'].includes(value) ? value : 'center-left';
+    const positions = ['center-left', 'center-right', 'bottom-left', 'bottom-right', 'top-left', 'top-right'];
+    const position = value => positions.includes(value) ? value : 'center-left';
     root.dataset.position = position(config.position);
     root.dataset.mobileposition = position(config.mobileposition);
     ['size', 'mobilesize'].forEach(key => root.style.setProperty(`--sis-${key}`, `${integer(config[key], 56, 48, 96)}px`));
@@ -85,7 +104,8 @@ export const init = config => {
     const localeCard = make('div', '', 'sis-a11y-card sis-a11y-language');
     const locale = make('select');
     locale.setAttribute('aria-label', label('language'));
-    Object.entries(config.languages || {[config.language || 'en']: labels['language_' + (config.language || 'en')] || config.language || 'English'}).forEach(([code, name]) => {
+    const languages = availableLanguages(config);
+    Object.entries(languages).forEach(([code, name]) => {
         const option = make('option', name);
         option.value = code;
         locale.append(option);
@@ -129,7 +149,9 @@ export const init = config => {
     const controls = new Map();
     GROUPS.forEach(group => {
         const selected = group.tools.filter(tool => config.tools.includes(tool));
-        if (!selected.length) { return; }
+        if (!selected.length) {
+            return;
+        }
         const card = makeCard(label(group.label), group.id);
         const grid = make('div', '', 'sis-a11y-items');
         selected.forEach(tool => {
@@ -179,12 +201,15 @@ export const init = config => {
     panel.append(header, content, brand);
     root.append(launcher, panel);
     let storage;
-    try { storage = window.localStorage; } catch (error) { /* Denied storage uses memory. */ }
+    try {
+        storage = window.localStorage;
+    } catch (error) { /* Denied storage uses memory. */ }
     const prefs = createPreferences(config.scope, config.tools, config.persist, storage);
     const effects = createEffects(doc);
     const aids = createAids(doc, {root});
     let state = prefs.load();
-    const canonicalState = input => JSON.stringify(Object.entries(normalise(input, config.tools)).filter(([, value]) => value && value !== 1).sort(([a], [b]) => a.localeCompare(b)));
+    const canonicalState = input => JSON.stringify(Object.entries(normalise(input, config.tools))
+        .filter(([, value]) => value && value !== 1).sort(([a], [b]) => a.localeCompare(b)));
     let activeProfile = availableProfiles.find(profile => canonicalState(profile.state) === canonicalState(state))?.id || null;
     let beforeProfile = {};
     const render = () => {
@@ -200,27 +225,42 @@ export const init = config => {
             }
         });
         profileButtons.forEach((control, id) => control.setAttribute('aria-pressed', String(id === activeProfile)));
-        const sizeStatus = config.tools.includes('fontsize') ? `${label('status')}: ${Math.round((state.fontsize || 1) * 100)}%` : '';
-        if (status.textContent !== sizeStatus) { status.textContent = sizeStatus; }
+        const sizeStatus = config.tools.includes('fontsize')
+            ? `${label('status')}: ${Math.round((state.fontsize || 1) * 100)}%` : '';
+        if (status.textContent !== sizeStatus) {
+            status.textContent = sizeStatus;
+        }
         aids.apply(state);
     };
     const activeModal = () => [...doc.querySelectorAll(
         '.modal.show,.modal.in,[role="dialog"][aria-modal="true"],dialog[open]')].find(element => {
-        if (element === panel || element.hidden || element.getAttribute('aria-hidden') === 'true') { return false; }
+        if (element === panel || element.hidden || element.getAttribute('aria-hidden') === 'true') {
+            return false;
+        }
         if (element.tagName === 'DIALOG') {
-            try { return element.matches(':modal'); } catch (error) { return element.getAttribute('aria-modal') === 'true'; }
+            try {
+                return element.matches(':modal');
+            } catch (error) {
+                return element.getAttribute('aria-modal') === 'true';
+            }
         }
         return window.getComputedStyle(element).display !== 'none';
     });
     const closePanel = (restoreFocus = true) => {
-        if (!panel.open) { return; }
+        if (!panel.open) {
+            return;
+        }
         modalObserver.disconnect();
         panel.close();
         launcher.setAttribute('aria-expanded', 'false');
-        if (restoreFocus) { launcher.focus(); }
+        if (restoreFocus) {
+            launcher.focus();
+        }
     };
     launcher.addEventListener('click', () => {
-        if (activeModal()) { return; }
+        if (activeModal()) {
+            return;
+        }
         panel.showModal();
         launcher.setAttribute('aria-expanded', 'true');
         close.focus();
@@ -228,8 +268,12 @@ export const init = config => {
             attributeFilter: ['class', 'aria-hidden', 'aria-modal', 'open'], subtree: true});
     });
     close.addEventListener('click', () => closePanel());
-    panel.addEventListener('cancel', event => { event.preventDefault(); closePanel(); });
-    panel.addEventListener('close', () => { modalObserver.disconnect(); launcher.setAttribute('aria-expanded', 'false'); });
+    panel.addEventListener('cancel', event => {
+        event.preventDefault(); closePanel();
+    });
+    panel.addEventListener('close', () => {
+        modalObserver.disconnect(); launcher.setAttribute('aria-expanded', 'false');
+    });
     const modalObserver = new window.MutationObserver(() => {
         const other = activeModal();
         if (panel.open && other) {
@@ -242,25 +286,45 @@ export const init = config => {
     });
     tools.addEventListener('click', event => {
         const target = event.target.closest('button');
-        if (!target || target.getAttribute('aria-disabled') === 'true') { return; }
+        if (!target || target.getAttribute('aria-disabled') === 'true') {
+            return;
+        }
         if (target.dataset.profile) {
             const profile = availableProfiles.find(item => item.id === target.dataset.profile);
-            if (activeProfile === profile.id) { state = {...beforeProfile}; activeProfile = null; }
-            else { if (!activeProfile) { beforeProfile = {...state}; } state = {...profile.state}; activeProfile = profile.id; }
+            if (activeProfile === profile.id) {
+                state = {...beforeProfile};
+                activeProfile = null;
+            } else {
+                if (!activeProfile) {
+                    beforeProfile = {...state};
+                }
+                state = {...profile.state};
+                activeProfile = profile.id;
+            }
         } else if (target.dataset.tool) {
             const tool = target.dataset.tool;
             const active = !state[tool];
-            if (colourTools.includes(tool)) { colourTools.forEach(key => delete state[key]); }
+            if (colourTools.includes(tool)) {
+                colourTools.forEach(key => delete state[key]);
+            }
             state[tool] = active;
             activeProfile = null;
         } else if (target.dataset.action === 'increase' || target.dataset.action === 'decrease') {
             state.fontsize = (state.fontsize || 1) + (target.dataset.action === 'increase' ? 0.1 : -0.1);
             activeProfile = null;
-        } else { return; }
+        } else {
+            return;
+        }
         state = prefs.save(state);
         render();
     });
-    const resetAll = () => { prefs.reset(); state = {}; activeProfile = null; beforeProfile = {}; render(); };
+    const resetAll = () => {
+        prefs.reset();
+        state = {};
+        activeProfile = null;
+        beforeProfile = {};
+        render();
+    };
     reset.addEventListener('click', resetAll);
     resetTop.addEventListener('click', resetAll);
     render();
